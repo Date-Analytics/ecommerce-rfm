@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.DS_Store
+
+# 本地数据库凭据(不入库)
+db_config.json
+
+# 编辑器配置
+.vscode/
+
+# 运行分析脚本生成的图表(看板截图在 dashboard/screenshots/ 入库)
+Ecommerce_RFM_Analysis.png
+roi_sensitivity.png
+rfm_funnel_attribution.png
+rfm_distribution.png
