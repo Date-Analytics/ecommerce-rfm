@@ -47,10 +47,9 @@ ecommerce-analysis/
 ├── dashboard/                       # Power BI 仪表板
 │   ├── ecommerce_dashboard.pbix
 │   └── screenshots/
-│       ├── page1_rfm.png
-│       ├── page2_roi.png
-│       ├── page3_funnel.png
-│       └── page4_overview.png
+│       ├── pbi_page1_rfm.png
+│       ├── pbi_page2_roi.png
+│       └── pbi_page3_funnel.png
 │
 └── report/                          # 项目报告
     └── PPT_Outline.md               # 面试 PPT 大纲
@@ -152,17 +151,18 @@ SQL 脚本说明：
 
 ### Power BI 仪表板
 
-![Page 1 - ROI Analysis](dashboard/screenshots/page2_roi.png)
+![Page 1 - 用户价值分析(RFM)](dashboard/screenshots/pbi_page1_rfm.png)
 
-![Page 2 - Funnel](dashboard/screenshots/page3_funnel.png)
+![Page 2 - 营销ROI分析](dashboard/screenshots/pbi_page2_roi.png)
 
-![Page 3 - Overview](dashboard/screenshots/page4_overview.png)
+![Page 3 - 行为漏斗分析](dashboard/screenshots/pbi_page3_funnel.png)
 
 > 完整交互式仪表板：`dashboard/ecommerce_dashboard.pbix`
+> 打印版看板：`report/ECOMMERCE_RFM_Dashboard.pdf`
 
 ### Python 可视化
 
-![RFM分析](dashboard/screenshots/page1_rfm.png)
+![RFM综合分析](Ecommerce_RFM_Analysis.png)
 
 ![用户分布](dashboard/screenshots/rfm_distribution.png)
 
