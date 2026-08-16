@@ -162,7 +162,7 @@ SQL 脚本说明：
 
 ### Python 可视化
 
-![RFM综合分析](Ecommerce_RFM_Analysis.png)
+![RFM综合分析](dashboard/screenshots/rfm_analysis.png)
 
 ![用户分布](dashboard/screenshots/rfm_distribution.png)
 
