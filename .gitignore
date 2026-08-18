@@ -7,6 +7,9 @@ __pycache__/
 # 本地数据库凭据(不入库)
 db_config.json
 
+# 面试 PPT 大纲草稿(不入库)
+report/PPT_Outline.md
+
 # 编辑器配置
 .vscode/
 

@@ -51,8 +51,7 @@ ecommerce-analysis/
 │       ├── pbi_page2_roi.png
 │       └── pbi_page3_funnel.png
 │
-└── report/                          # 项目报告
-    └── PPT_Outline.md               # 面试 PPT 大纲
+└── report/                          # 项目报告（含 PDF 报告与演示 PPT）
 ```
 
 ## 环境准备

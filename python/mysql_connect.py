@@ -14,13 +14,15 @@ def _load_db_credentials():
     user = os.environ.get('MYSQL_USER')
     password = os.environ.get('MYSQL_PASSWORD')
     db = os.environ.get('MYSQL_DB')
+    hosts = []
     if (user is None or db is None) and os.path.exists(DB_CONFIG_FILE):
         with open(DB_CONFIG_FILE, encoding='utf-8') as f:
             cfg = json.load(f)
         user = user or cfg.get('user', 'root')
         password = password if password is not None else cfg.get('password', '')
         db = db or cfg.get('db', 'ecommerce')
-    return user or 'root', password or '', db or 'ecommerce'
+        hosts = cfg.get('hosts', [])
+    return user or 'root', password or '', db or 'ecommerce', hosts
 
 
 def _candidate_hosts():
@@ -67,13 +69,13 @@ def _candidate_hosts():
 
 
 def get_engine(host=None, user=None, password=None, db=None):
-    cfg_user, cfg_password, cfg_db = _load_db_credentials()
+    cfg_user, cfg_password, cfg_db, cfg_hosts = _load_db_credentials()
     user = user or cfg_user
     password = password if password is not None else cfg_password
     db = db or cfg_db
     if host is None:
-        # 候选列表 + 已知可用的 IP 兜底
-        candidates = _candidate_hosts() + ['127.0.0.1', '127.0.0.1']
+        # 候选列表 + db_config.json 中配置的备用 IP(不入库)
+        candidates = _candidate_hosts() + cfg_hosts
         for candidate in candidates:
             try:
                 conn = pymysql.connect(
