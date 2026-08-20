@@ -43,7 +43,7 @@ def calc_roi(rfm, coupon_cost=20.00):
 
     df_roi = pd.DataFrame(results)
     print(f'目标用户数: {n_target}')
-    print(f'人均历史消费: ¥{avg_spend:,.2f}')
+    print(f'客单价估算: ¥{avg_spend:,.2f}')
     print(f'单券成本: ¥{coupon_cost:,.2f}')
     print(df_roi.to_string(index=False))
     return df_roi, n_target, avg_spend

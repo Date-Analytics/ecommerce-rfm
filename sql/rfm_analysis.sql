@@ -60,35 +60,49 @@ SELECT COUNT(*) AS 有购买行为用户数 FROM rfm_base;
 
 
 -- ==========================================
--- 3. RFM 打分（MySQL 5.7 兼容，用户变量模拟 NTILE 五分位）
+-- 3. RFM 打分（MySQL 5.7 无窗口函数：先物化排序结果，再顺序扫描打分）
 --   R: 越低越好 → 反向打分
 --   F: 越高越好 → 正向打分
 --   M: 越高越好 → 正向打分
+--   注意：用户变量赋值依赖行扫描顺序。若在同一条 SELECT 里用
+--   ORDER BY + 用户变量，排序是否生效无保证。必须先落盘排序（两段式），
+--   再对已排序的临时表顺序扫描打分。
 -- ==========================================
 SELECT '===== RFM 打分 =====' AS info;
 
 SELECT COUNT(*) INTO @n FROM rfm_base;
 
--- R score：按 recency 升序，row_number 越小 = recency 越小 = 越好
+-- R score：recency 升序，排第 1 名的 recency 最小 = 最好，得 5 分
+DROP TEMPORARY TABLE IF EXISTS rfm_sorted;
+CREATE TEMPORARY TABLE rfm_sorted AS
+SELECT user_id, recency FROM rfm_base ORDER BY recency, user_id;
 SET @rn := 0;
 DROP TEMPORARY TABLE IF EXISTS rfm_r;
 CREATE TEMPORARY TABLE rfm_r AS
 SELECT user_id, 6 - CEIL((@rn := @rn + 1) * 5.0 / @n) AS r_score
-FROM rfm_base ORDER BY recency;
+FROM rfm_sorted;
 
--- F score：按 frequency 升序，row_number 越大 = frequency 越大 = 越好
+-- F score：frequency 升序，排最后的 frequency 最大 = 最好，得 5 分
+DROP TEMPORARY TABLE IF EXISTS rfm_sorted;
+CREATE TEMPORARY TABLE rfm_sorted AS
+SELECT user_id, frequency FROM rfm_base ORDER BY frequency, user_id;
 SET @rn := 0;
 DROP TEMPORARY TABLE IF EXISTS rfm_f;
 CREATE TEMPORARY TABLE rfm_f AS
 SELECT user_id, CEIL((@rn := @rn + 1) * 5.0 / @n) AS f_score
-FROM rfm_base ORDER BY frequency;
+FROM rfm_sorted;
 
--- M score：按 monetary 升序
+-- M score：monetary 升序，同上
+DROP TEMPORARY TABLE IF EXISTS rfm_sorted;
+CREATE TEMPORARY TABLE rfm_sorted AS
+SELECT user_id, monetary FROM rfm_base ORDER BY monetary, user_id;
 SET @rn := 0;
 DROP TEMPORARY TABLE IF EXISTS rfm_m;
 CREATE TEMPORARY TABLE rfm_m AS
 SELECT user_id, CEIL((@rn := @rn + 1) * 5.0 / @n) AS m_score
-FROM rfm_base ORDER BY monetary;
+FROM rfm_sorted;
+
+DROP TEMPORARY TABLE IF EXISTS rfm_sorted;
 
 -- 合并三张 score 表
 DROP TEMPORARY TABLE IF EXISTS rfm_scored;

@@ -1,6 +1,8 @@
 -- ==========================================
 -- 营销ROI预估 + 漏斗归因分析
--- 运行方式：mysql -u root -p < sql/roi_analysis.sql
+-- 依赖 rfm_analysis.sql 在同一会话中创建的临时表 rfm_segmented
+-- 和变量 @snapshot_date，必须按顺序连跑：
+--   cat sql/rfm_analysis.sql sql/user_analysis.sql sql/roi_analysis.sql | mysql -u root -p
 -- ==========================================
 
 USE ecommerce;
@@ -11,13 +13,15 @@ USE ecommerce;
 SELECT '===== 运营ROI预估 =====' AS info;
 
 -- 目标用户：高价值流失预警（需挽留客户 + 需召回客户）
+-- GMV 口径与第 3 节一致：一次营销挽回的是一笔订单，用笔单价 × 转化人数
+-- 转化人数取 FLOOR（与 Python 链路的 int() 截断一致）
 SELECT
     COUNT(*)                                          AS 目标用户数,
     ROUND(AVG(monetary), 2)                           AS 人均历史消费,
     ROUND(AVG(frequency), 1)                          AS 人均购买次数,
-    ROUND(AVG(monetary) * 0.08 * COUNT(*), 2)         AS 预期挽回GMV_8pct转化率,
-    ROUND(AVG(monetary) * 0.05 * COUNT(*), 2)         AS 预期挽回GMV_5pct转化率,
-    ROUND(AVG(monetary) * 0.10 * COUNT(*), 2)         AS 预期挽回GMV_10pct转化率
+    ROUND(FLOOR(COUNT(*) * 0.05) * ROUND(AVG(avg_order_amount), 2), 2) AS 预期挽回GMV_5pct转化率,
+    ROUND(FLOOR(COUNT(*) * 0.08) * ROUND(AVG(avg_order_amount), 2), 2) AS 预期挽回GMV_8pct转化率,
+    ROUND(FLOOR(COUNT(*) * 0.10) * ROUND(AVG(avg_order_amount), 2), 2) AS 预期挽回GMV_10pct转化率
 FROM rfm_segmented
 WHERE segment IN ('需挽留客户', '需召回客户');
 
@@ -124,6 +128,7 @@ WHERE segment IN ('需挽留客户', '需召回客户');
 
 TRUNCATE TABLE marketing_roi;
 
+-- 转化人数取 FLOOR 截断(与 Python 链路的 int() 一致),保证两链路同口径
 INSERT INTO marketing_roi
     (analysis_date, target_segment, target_users, avg_spend_est,
      conversion_rate_pct, expected_conversions, expected_gmv,
@@ -134,13 +139,13 @@ SELECT
     @n_target,
     @avg_spend,
     rates.rate_pct,
-    ROUND(@n_target * rates.rate_pct / 100),
-    ROUND(@n_target * rates.rate_pct / 100 * @avg_spend, 2),
+    FLOOR(@n_target * rates.rate_pct / 100),
+    ROUND(FLOOR(@n_target * rates.rate_pct / 100) * @avg_spend, 2),
     @coupon_cost,
     @n_target * @coupon_cost,
-    ROUND((@n_target * rates.rate_pct / 100 * @avg_spend - @n_target * @coupon_cost)
+    ROUND((FLOOR(@n_target * rates.rate_pct / 100) * @avg_spend - @n_target * @coupon_cost)
           / (@n_target * @coupon_cost), 2),
-    ROUND(@n_target * rates.rate_pct / 100 * @avg_spend - @n_target * @coupon_cost, 2)
+    ROUND(FLOOR(@n_target * rates.rate_pct / 100) * @avg_spend - @n_target * @coupon_cost, 2)
 FROM (
     SELECT 3.0 AS rate_pct UNION ALL
     SELECT 5.0 UNION ALL

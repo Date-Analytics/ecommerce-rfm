@@ -1,6 +1,7 @@
 -- ==========================================
 -- 用户分层汇总与业务分析
--- 运行方式：mysql -u root -p < sql/user_analysis.sql
+-- 依赖 rfm_analysis.sql 在同一会话中创建的临时表 rfm_segmented，必须连跑：
+--   cat sql/rfm_analysis.sql sql/user_analysis.sql sql/roi_analysis.sql | mysql -u root -p
 -- ==========================================
 
 USE ecommerce;
